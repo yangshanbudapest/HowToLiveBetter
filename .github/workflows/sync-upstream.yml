@@ -1,0 +1,26 @@
+# 自动同步原版仓库 eternity4719/HowToLiveBetter 的 main 分支（只在 fork 里运行）
+# 每 6 小时检查一次，也可以在 Actions 页面手动点 Run workflow。
+#
+# 注意：原版如果改了 .github/workflows/ 下的文件，默认的 GITHUB_TOKEN 没有权限同步，
+# 这次运行会失败。想让这种情况也能自动同步，就建一个带 repo 和 workflow 权限的
+# Personal Access Token，存成仓库 Secret，名字叫 SYNC_TOKEN。没有它也能用，
+# 失败时去仓库首页手动点一次 Sync fork 即可。
+name: 自动同步原版
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.repository != 'eternity4719/HowToLiveBetter'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 从原版同步 main
+        run: gh repo sync "$GITHUB_REPOSITORY" --branch main
+        env:
+          GH_TOKEN: ${{ secrets.SYNC_TOKEN || github.token }}
